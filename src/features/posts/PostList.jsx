@@ -1,30 +1,38 @@
-import { useSelector } from "react-redux"
-import { selectAllPosts } from "./postsSlice"
-import PostAuthor from "./PostAuthor"
-import TimeAgo from "./TimeAgo"
-import ReactionsButtons from "./ReactionsButtons"
+import { useSelector, useDispatch } from "react-redux"
+import { useEffect } from "react"
+import { selectAllPosts, getPostsStatus, getPostsError, fetchPosts } from "./postsSlice"
+import PostsExcerpt from "./PostsExcerpt"
 
 const PostList = () => {
+    const dispatch = useDispatch()
+
     const posts = useSelector(selectAllPosts)
+    const postsStatus = useSelector(getPostsStatus)
+    const error = useSelector(getPostsError)
 
-    const orderedPosts = posts.slice().sort((a, b) => b.date.localeCompare(a.date)) //show the newest posts from the top 
+    useEffect(()=>{
+      if(postsStatus === 'idle'){
+          dispatch(fetchPosts())
+      }
+    }, [postsStatus, dispatch])
 
-    const postElements = orderedPosts.map(post => (
-              <article key={post.id}>
-                 <h3>{post.title}</h3>
-                 <p>{post.content.substring(0, 100)}</p>
-                 <p className="postCredit">
-                  <PostAuthor userId={post.userId}/>
-                  <TimeAgo timestamp={post.date}/>
-                </p>
-                <ReactionsButtons post={post}/>
-              </article>
-    ))
+    // const orderedPosts = posts.slice().sort((a, b) => b.date.localeCompare(a.date)) //show the newest posts from the top 
+    // const postElements = orderedPosts.map(post => (
+    // ))
+  let content;
+  if(postsStatus === 'loading'){
+        content = <p>'Loading...'</p>
+  }  else if(postsStatus === 'succeeded'){
+        const orderedPosts = posts.slice().sort((a, b) => b.date.localeCompare(a.date))
+        content = orderedPosts.map(post => <PostsExcerpt key={post.id} post={post} />)
+  } else if (postsStatus === 'failed'){
+        content = <p>{error}</p>
+  }
 
   return (
     <section>
         <h2>Posts</h2>
-        {postElements}
+        {content}
     </section>
   )
 }
