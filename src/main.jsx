@@ -4,15 +4,22 @@ import { store } from './app/store'
 import { Provider } from 'react-redux'
 import App from './App'
 import './index.css'
+import { fetchPosts } from './features/posts/postsSlice'
 import {fetchUsers} from './features/users/userSlice'
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 
+store.dispatch(fetchPosts());
 store.dispatch(fetchUsers())
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}> 
-        <App/>
+      <Router>
+        <Routes>
+          <Route path='/*' element={<App />}/>
+        </Routes>
+      </Router>
     </Provider>
   </React.StrictMode>
 )
